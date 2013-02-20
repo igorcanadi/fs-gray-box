@@ -26,11 +26,11 @@ int main() {
     int fd;
    
     for (r = 0; r < RUNS; ++r) {
-        put_junk(buffer);
         unlink(TEST_FILE);
        
         fd = open(TEST_FILE, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC);
         for (i = FROM_SIZE; i <= TO_SIZE; ++i) {
+            put_junk(buffer);
             tmp = rdtsc_start();
             write(fd, buffer, BLOCK_SIZE);
             fsync(fd);
