@@ -7,8 +7,8 @@
 #define TEST_FILE "/scratch/.tmpfiledump"
 #define BLOCK_SIZE 128
 #define FROM_SIZE 1
-#define TO_SIZE 1000
-#define RUNS 1
+#define TO_SIZE 10000
+#define RUNS 5
 
 void put_junk(char *buffer) {
     int i;
@@ -37,7 +37,10 @@ int main() {
             tmp = rdtsc_start();
             // measure only one byte
             t = write(fd, buffer, 1);
-            results[i] += (rdtsc_end() - tmp);
+            cur_time = rdtsc_end() - tmp;
+            if (r == 0 || results[i] > cur_time) {
+                results[i] = cur_time;
+            }
             if (t != 1) {
                 fprintf(stderr, "syserror\n");
                 return 1;
@@ -54,8 +57,7 @@ int main() {
     }
 
     for (i = FROM_SIZE; i <= TO_SIZE; ++i) {
-        // TODO WARN take a look at the data before you average it!
-        printf("%d %llu\n", i, results[i] / RUNS);
+        printf("%d %llu\n", i, results[i]);
     }
 
     return 0;
