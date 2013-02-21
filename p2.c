@@ -1,45 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
+//#include <unistd.h>
+#include <fcntl.h>
 #include "rdtsc.h"
 
 
-#define BLOCK_SZ	256	// Bytes read each time
+#define READ_SZ		256	// Bytes read each time
+
 
 int main(int argc, char *argv[]){
 
-	FILE *file;
-	unsigned long long t1, t2;
+	int fd;			// File descriptor
+	int numRead;		// Error status thing.	
+	uint64_t t1, t2;	// Timers
 
-	long int size, max_blocks;
-
-	char buf[BLOCK_SZ];
+	char buf[READ_SZ];	// Buffer
 	unsigned int i;
 
+	// Calling syntax: p2 clear_file working_file
+
 	if (argc != 2){
-		perror("Provide file to read");
+		printf("Usage: p2 working_file\n");
 		exit(-1);
 	}
 
-	if ( (file = fopen(argv[1], "r")) == NULL){
-		perror("fopen error");
+	if ( (fd = open(argv[1], O_RDONLY)|O_LARGEFILE) < 0){
+		perror("open error");
 		exit(-1);
 	}
 
-	// Get file file size
-	fseek(file, 0, SEEK_END);
-	size = ftell(file);
-	max_blocks = size / BLOCK_SZ;
-
-	// Perform random read
-	for (i = 0; i < max_blocks; i++){
-		t1 = rdtsc();
-		fread(buf, sizeof(char), BLOCK_SZ, file);
-		t2 = rdtsc();
+	// Cold start cache
+	system("sync; echo 3 > /proc/sys/vm/drop_caches");
+		
+	numRead = READ_SZ;
+	printf("# Blocks Read, TSC Cycles\n");
+	// Perform successive sequential read
+	for (i = 0; numRead == READ_SZ; i++){
+		t1 = rdtsc_start();
+		numRead = read(fd, buf, READ_SZ);
+		t2 = rdtsc_end();
 
 		printf("%u,%llu\n", i+1, t2-t1);	// (num blocks,cycles) 
 	}
 	
-	fclose(file);	
+	close(fd);	
 
 	return 0;
 
