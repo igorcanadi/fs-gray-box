@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <fcntl.h>
 #include "rdtsc.h"
 
-#define MAX_READ_SZ	1024*1024
+#define MAX_READ_SZ	(1024*1024)	// Maximum read size, bytes
 
 int main(int argc, char *argv[]){
 
-	FILE *file;
-	unsigned long long t1, t2;
+	int fd;	// File descriptor 
+	uint64_t t1, t2;
 
 	long int offset;
 	long int size;
@@ -17,31 +17,31 @@ int main(int argc, char *argv[]){
 	unsigned int i;
 
 	if (argc != 2){
-		perror("Provide file to read");
+		printf("Usage: p1 working_file\n");
 		exit(-1);
 	}
 
-	if ( (file = fopen(argv[1], "r")) == NULL){
+	if ( (fd = open(argv[1], O_RDONLY|O_LARGEFILE)) < 0){
 		perror("fopen error");
 		exit(-1);
 	}
 
-	// Get file file size
-	fseek(file, 0, SEEK_END);
-	size = ftell(file);
+	// Get file size
+	size = lseek(fd, 0, SEEK_END);
 
+	printf("Bytes Read, TSC Cycles\n");
 	// Perform random read
-	for (i = 256; i < MAX_READ_SZ && i < size; i+= 256){
+	for (i = 256; i < MAX_READ_SZ && i < size; i <<= 1){
 		offset = random() % (size - i);
-		fseek(file, offset, SEEK_SET);
-		t1 = rdtsci_start();
-		fread(buf, sizeof(char), i, file);
+		lseek(fd, offset, SEEK_SET);
+		t1 = rdtsc_start();
+		if(read(fd, buf, i) != i) break;	// Read i bytes
 		t2 = rdtsc_end();
 
-		printf("%u,%llu\n", i, t2-t1);
+		printf("%u,%llu\n", i, t2-t1);	// (bytes read, cycles)
 	}
 	
-	fclose(file);	
+	close(fd);	
 
 	return 0;
 
