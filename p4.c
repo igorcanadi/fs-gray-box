@@ -5,9 +5,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #define TEST_FILE "/scratch/.tmpfiledump"
-#define BLOCK_SIZE 512
+#define BLOCK_SIZE 128
 #define FROM_SIZE 1
-#define TO_SIZE 200
+#define TO_SIZE 1000
 #define RUNS 1
 
 void put_junk(char *buffer) {
@@ -18,7 +18,7 @@ void put_junk(char *buffer) {
 }
 
 int main() {
-    int r;
+    int r, t;
     uint64_t i;
     char buffer[BLOCK_SIZE];
     uint64_t tmp, cur_time;
@@ -27,18 +27,28 @@ int main() {
    
     for (r = 0; r < RUNS; ++r) {
         unlink(TEST_FILE);
-       
-        fd = open(TEST_FILE, O_WRONLY | O_CREAT);
+        fd = open(TEST_FILE, O_WRONLY | O_SYNC | O_CREAT);
+        if (fd == -1 || fsync(fd) == -1) {
+            fprintf(stderr, "syserror\n");
+            return 1;
+        }
         for (i = FROM_SIZE; i <= TO_SIZE; ++i) {
             put_junk(buffer);
             tmp = rdtsc_start();
             // measure only one byte
-            write(fd, buffer, 1);
-            fsync(fd);
+            t = write(fd, buffer, 1);
             results[i] += (rdtsc_end() - tmp);
+            if (t != 1) {
+                fprintf(stderr, "syserror\n");
+                return 1;
+            }
+
             // put in the rest
-            write(fd, buffer+1, BLOCK_SIZE-1);
-            fsync(fd);
+            t = write(fd, buffer+1, BLOCK_SIZE-1);
+            if (t != BLOCK_SIZE-1) {
+                fprintf(stderr, "syserror\n");
+                return 1;
+            }
         }
         close(fd);
     }
