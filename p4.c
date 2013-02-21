@@ -5,10 +5,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #define TEST_FILE "/scratch/.tmpfiledump"
-#define BLOCK_SIZE 4096
+#define BLOCK_SIZE 512
 #define FROM_SIZE 1
-#define TO_SIZE 50
-#define RUNS 50
+#define TO_SIZE 200
+#define RUNS 1
 
 void put_junk(char *buffer) {
     int i;
@@ -28,20 +28,24 @@ int main() {
     for (r = 0; r < RUNS; ++r) {
         unlink(TEST_FILE);
        
-        fd = open(TEST_FILE, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC);
+        fd = open(TEST_FILE, O_WRONLY | O_CREAT);
         for (i = FROM_SIZE; i <= TO_SIZE; ++i) {
             put_junk(buffer);
             tmp = rdtsc_start();
-            write(fd, buffer, BLOCK_SIZE);
+            // measure only one byte
+            write(fd, buffer, 1);
             fsync(fd);
             results[i] += (rdtsc_end() - tmp);
+            // put in the rest
+            write(fd, buffer+1, BLOCK_SIZE-1);
+            fsync(fd);
         }
         close(fd);
     }
 
     for (i = FROM_SIZE; i <= TO_SIZE; ++i) {
         // TODO WARN take a look at the data before you average it!
-        printf("%d %llu\n", i, results[i] / (TO_SIZE - FROM_SIZE + 1));
+        printf("%d %llu\n", i, results[i] / RUNS);
     }
 
     return 0;
