@@ -3,9 +3,14 @@
 #include <fcntl.h>
 #include "rdtsc.h"
 
+#define MIN_READ_SZ	512
 #define MAX_READ_SZ	(1024*1024)	// Maximum read size, bytes
+#define MAX_NUM_READS	1024
+#define NUM_RUNS	1
+#define STEP_TRANSFORM(x)	x += MIN_READ_SZ
 
-int main(int argc, char *argv[]){
+// Vary read size 
+unsigned int runExp(const char *fName, uint64_t *res){
 
 	int fd;	// File descriptor 
 	uint64_t t1, t2;
@@ -14,14 +19,10 @@ int main(int argc, char *argv[]){
 	long int size;
 
 	char buf[MAX_READ_SZ];
-	unsigned int i;
+	unsigned int readSize;
+	unsigned int index;
 
-	if (argc != 2){
-		printf("Usage: p1 working_file\n");
-		exit(-1);
-	}
-
-	if ( (fd = open(argv[1], O_RDONLY|O_LARGEFILE)) < 0){
+	if ( (fd = open(fName, O_RDONLY|O_LARGEFILE)) < 0){
 		perror("fopen error");
 		exit(-1);
 	}
@@ -29,20 +30,50 @@ int main(int argc, char *argv[]){
 	// Get file size
 	size = lseek(fd, 0, SEEK_END);
 
-	printf("Bytes Read, TSC Cycles\n");
+//	printf("Bytes Read, TSC Cycles\n");
 	// Perform random read
-	for (i = 256; i < MAX_READ_SZ && i < size; i <<= 1){
-		offset = random() % (size - i);
+	for (readSize = MIN_READ_SZ, index = 0; readSize < MAX_READ_SZ && index < MAX_NUM_READS && readSize < size; STEP_TRANSFORM(readSize), index++){
+		system("sync; echo 3 >| /proc/sys/vm/drop_caches");
+		offset = random() % (size - readSize);
 		lseek(fd, offset, SEEK_SET);
+
 		t1 = rdtsc_start();
-		if(read(fd, buf, i) != i) break;	// Read i bytes
+		if(read(fd, buf, readSize) != readSize) break;	// Read i bytes
 		t2 = rdtsc_end();
 
-		printf("%u,%llu\n", i, t2-t1);	// (bytes read, cycles)
+		if (res[index] == 0 || (t2-t1) < res[index]){
+			res[index] = t2-t1;
+		}
+//		printf("%u,%llu\n", readSize, t2-t1);	// (bytes read, cycles)
 	}
 	
 	close(fd);	
 
+	return index;
+}
+
+int main(int argc, char *argv[]){
+	uint64_t *intervals = calloc(MAX_NUM_READS, sizeof(uint64_t));
+
+	unsigned int i, readSize;
+	unsigned int maxInd;
+	
+	if (argc != 2){
+		printf("Usage: p1 working_file\n");
+		exit(-1);
+	}
+
+	// Run experiment
+	for(i = 0; i < NUM_RUNS; i++){
+		maxInd = runExp(argv[1], intervals);
+	}
+
+	// Print results
+	printf("Read Buffer Size (B), TSC Cycles\n");
+	for(i = 0, readSize=MIN_READ_SZ; i < maxInd; i++, STEP_TRANSFORM(readSize)){
+		printf("%u, %llu\n", readSize, intervals[i]);
+	}
+	
 	return 0;
 
 }
