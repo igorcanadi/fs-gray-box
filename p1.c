@@ -4,7 +4,7 @@
 #include "rdtsc.h"
 
 #define MIN_READ_SZ	512
-#define MAX_READ_SZ	(1024*1024)	// Maximum read size, bytes
+#define MAX_READ_SZ	(128*1024)	// Maximum read size, bytes
 #define MAX_NUM_READS	1024
 #define NUM_RUNS	1
 #define STEP_TRANSFORM(x)	x += MIN_READ_SZ
@@ -15,8 +15,8 @@ unsigned int runExp(const char *fName, uint64_t *res){
 	int fd;	// File descriptor 
 	uint64_t t1, t2;
 
-	long int offset;
-	long int size;
+	off64_t offset;
+	off64_t size;
 
 	char buf[MAX_READ_SZ];
 	unsigned int readSize;
@@ -33,8 +33,14 @@ unsigned int runExp(const char *fName, uint64_t *res){
 //	printf("Bytes Read, TSC Cycles\n");
 	// Perform random read
 	for (readSize = MIN_READ_SZ, index = 0; readSize < MAX_READ_SZ && index < MAX_NUM_READS && readSize < size; STEP_TRANSFORM(readSize), index++){
-		system("sync; echo 3 >| /proc/sys/vm/drop_caches");
+	//	system("sync; echo 3 >| /proc/sys/vm/drop_caches");
+		
+		// Read from random X * read Size
 		offset = random() % (size - readSize);
+		
+//		offset = random() % (1024*1024);
+		offset = offset - (offset % readSize);
+//		printf("offset=%llu\n", offset);
 		lseek(fd, offset, SEEK_SET);
 
 		t1 = rdtsc_start();
@@ -71,7 +77,7 @@ int main(int argc, char *argv[]){
 	// Print results
 	printf("Read Buffer Size (B), TSC Cycles\n");
 	for(i = 0, readSize=MIN_READ_SZ; i < maxInd; i++, STEP_TRANSFORM(readSize)){
-		printf("%u, %llu\n", readSize, intervals[i]);
+		printf("%u, %llu\n", readSize, intervals[i] / readSize);
 	}
 	
 	return 0;
