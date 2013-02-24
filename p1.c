@@ -6,7 +6,7 @@
 #define MIN_READ_SZ	512
 #define MAX_READ_SZ	(128*1024)	// Maximum read size, bytes
 #define MAX_NUM_READS	1024
-#define NUM_RUNS	1
+#define NUM_RUNS	50
 #define STEP_TRANSFORM(x)	x += MIN_READ_SZ
 
 // Vary read size 
@@ -29,6 +29,7 @@ unsigned int runExp(const char *fName, uint64_t *res){
 
 	// Get file size
 	size = lseek(fd, 0, SEEK_END);
+//	printf("size = %llu\n", size);
 
 //	printf("Bytes Read, TSC Cycles\n");
 	// Perform random read
@@ -44,7 +45,10 @@ unsigned int runExp(const char *fName, uint64_t *res){
 		lseek(fd, offset, SEEK_SET);
 
 		t1 = rdtsc_start();
-		if(read(fd, buf, readSize) != readSize) break;	// Read i bytes
+		if(read(fd, buf, readSize) != readSize){
+			printf("# reads %d\n", index);
+			break;	// Read i bytes
+		}
 		t2 = rdtsc_end();
 
 		if (res[index] == 0 || (t2-t1) < res[index]){
@@ -77,7 +81,7 @@ int main(int argc, char *argv[]){
 	// Print results
 	printf("Read Buffer Size (B), TSC Cycles\n");
 	for(i = 0, readSize=MIN_READ_SZ; i < maxInd; i++, STEP_TRANSFORM(readSize)){
-		printf("%u, %llu\n", readSize, intervals[i] / readSize);
+		printf("%u, %llu\n", readSize, intervals[i]);
 	}
 	
 	return 0;
