@@ -1,6 +1,7 @@
-#define _GNU_SOURCE
+#define _LARGEFILE64_SOURCE
 #include "rdtsc.h"
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/types.h>
