@@ -1,8 +1,11 @@
+#define _LARGEFILE64_SOURCE
 #include "rdtsc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #define TEST_FILE "/scratch/.tmpfiledump"
 #define BLOCK_SIZE 128
@@ -57,7 +60,7 @@ int main() {
     }
 
     for (i = FROM_SIZE; i <= TO_SIZE; ++i) {
-        printf("%d %llu\n", i, results[i]);
+        printf("%llu %llu\n", i, results[i]);
     }
 
     return 0;

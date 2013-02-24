@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O1 -g -D _GNU_SOURCE
+CFLAGS=-O1 -D _GNU_SOURCE -Wall
 BINFOLDER=./bin
 
 all: p1 p2 p3 p4

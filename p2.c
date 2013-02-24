@@ -1,6 +1,10 @@
+#define _LARGEFILE64_SOURCE
+#include <sys/types.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "rdtsc.h"
 
 
@@ -16,7 +20,6 @@
 void runExp(const char *fName, uint64_t *res){
 
 	int fd;			// File descriptor
-	int numRead;		// Error status thing.	
 	uint64_t t1, t2;	// Timers
 
 	char buf[READ_SZ];	// Buffer
@@ -31,7 +34,6 @@ void runExp(const char *fName, uint64_t *res){
 	// Cold start cache
 	system("sync; echo 3 >| /proc/sys/vm/drop_caches");
 		
-	numRead = READ_SZ;
 //	printf("# Reads, TSC Cycles\n");
 	// Perform successive sequential read
 	for (i = 0; i < MAX_READS; i++){
@@ -54,7 +56,6 @@ void runExp(const char *fName, uint64_t *res){
 void runExp2(const char *fName, uint64_t *res){
 
 	int fd;			// File descriptor
-	int numRead;		// Error status thing.	
 	uint64_t t1, t2;	// Timers
 
 	char buf[READ_SZ];	// Buffer
