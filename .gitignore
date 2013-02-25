@@ -29,4 +29,7 @@
 */*.gz
 /paper/paper.aux
 
+# R crap
 .Rapp.history
+/data/.RData
+/data/.Rhistory
