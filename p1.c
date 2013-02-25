@@ -17,7 +17,7 @@
 unsigned int runExp(const char *fName, uint64_t *res){
 
     int fd;    // File descriptor 
-    uint64_t t1, t2;
+    uint64_t t1, t2, t;
     int read_out;
 
     off64_t offset;
@@ -46,8 +46,13 @@ unsigned int runExp(const char *fName, uint64_t *res){
         offset = offset - (offset % readSize);
         lseek(fd, offset, SEEK_SET);
 
+        read_out = 0;
         t1 = rdtsc_start();
-        read_out = read(fd, buf, readSize);
+        while (read_out != readSize) {
+            t = read(fd, buf + read_out, readSize);
+            if (t < 0) break;
+            read_out += t;
+        }
         t2 = rdtsc_end();
         if (read_out != readSize) {
             printf("# reads %d\n", index);

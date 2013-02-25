@@ -40,6 +40,9 @@ void runExp(const char *fName, uint64_t *res){
         if ( res[i] == 0 || (t2-t1) < res[i]) {
             res[i] = t2-t1;
         }
+        if (i < 50) {
+            usleep(100000);
+        }
 //    printf("%u,%llu\n", i+1, t2-t1);    // (num blocks,cycles) 
     }
     

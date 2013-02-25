@@ -19,7 +19,7 @@ int main() {
     microsec = (tv2.tv_sec - tv.tv_sec)*1000000 + (tv2.tv_usec - tv.tv_usec);
     printf("%llu\n", microsec);
     printf("%llu %llu -> %llu\n", startR, endR, endR - startR);
-    printf("freq: %llu\n", (endR - startR) / microsec);
+    printf("freq: %lf\n", (double)(endR - startR) / microsec);
     printf("%llu\n", a);
 
     return 0;
