@@ -10,7 +10,7 @@
 #define TEST_FILE "/scratch/.tmphugefile40GB"
 #define GB 1024*1024*1204LL
 #define FROM_SIZE GB
-#define TO_SIZE 22*GB
+#define TO_SIZE 24*GB
 #define STEP GB
 #define RUNS 3
 #define BUFFER_SIZE 20*1024*1024 // 20MB
@@ -29,18 +29,6 @@ uint64_t get_avg_fetch_time(uint64_t size) {
     }
 
     buffer = (char *) malloc(BUFFER_SIZE * sizeof(char));
-
-#ifdef DO_THE_BALLOONING
-    /* initalize huge array */
-    char *balloon = (char *)malloc(BALLOON_SIZE);
-    for (i = 0; i < 1000000; ++i) {
-        balloon[rand() % BALLOON_SIZE] = rand() % 128;
-    }
-    if (balloon == NULL) {
-        fprintf(stderr, "syserror\n");
-        exit(1);
-    }
-#endif
 
     /* Cold start cache */
     system("sync; echo 3 >| /proc/sys/vm/drop_caches");
@@ -67,20 +55,37 @@ uint64_t get_avg_fetch_time(uint64_t size) {
         close(fd);
     }
 
-#ifdef DO_THE_BALLOONING
-        free(balloon);
-#endif
-
     return total_time / count_access;
 }
 
 int main() {
-    uint64_t size;
+    uint64_t size, i;
+
+#ifdef DO_THE_BALLOONING
+    /* initalize huge array */
+    char *balloon = (char *)malloc(BALLOON_SIZE);
+    if (balloon == NULL) {
+        fprintf(stderr, "syserror\n");
+        exit(1);
+    }
+    for (i = 0; i < BALLOON_SIZE; ++i) {
+        balloon[i] = rand() % 128;
+    }
+    fprintf(stderr, "balloon initialized\n");
+#endif
 
     for (size = FROM_SIZE; size <= TO_SIZE; size += STEP) {
         printf("%llu %llu\n", size, get_avg_fetch_time(size));
         fflush(stdout);
     }
+
+#ifdef DO_THE_BALLOONING
+    fprintf(stderr, "freeing balloon\n");
+    for (i = 0; i < 10; ++i) {
+        fprintf(stderr, "%c\n", balloon[rand() % BALLOON_SIZE]);
+    }
+    free(balloon);
+#endif
 
     return 0;
 }
