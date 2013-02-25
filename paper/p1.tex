@@ -1,0 +1,17 @@
+In order to measure the ideal buffer size for random I/O on a file, we used the 
+test described by the psuedocode of Figure~\ref{fig:p1code}
+
+\begin{figure}[ht]
+\begin{lstlisting}
+for readSize := MAX_READ_SIZE to MIN_READ_SIZE do
+	clear cache
+	open file
+	read 1B from the end of the file
+	t1 := rdtsc_start()
+	read readSize bytes from offset of random*readSize
+	t2 := rdtsc_end()
+	close file
+\end{lstlisting} 
+\caption{Pseudocode for measuring ideal buffer size}
+\label{fig:p1code}
+\end{figure}

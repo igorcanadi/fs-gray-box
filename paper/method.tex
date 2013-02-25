@@ -1,0 +1,51 @@
+% Timer, Platform
+We ran our experiments on a Dell Precision T7500n Dual Processor desktop 
+computer running 64-bit RHEL6 built on the 2.6.32 kernel for CentOS6. The 
+machine housed a Dual Quad Core Intel\textsuperscript{\textregistered} 
+Xeon\textsuperscript{\textregistered} E5620 2.40GHz Processor, 24GB of RAM, 
+and two 600GB 15K RPM harddrives. Note, however, that during our experiments 
+we restricted disk accesses to only one harddrive.
+
+In order to perform our comparison with a virtual machine, we used VMware to
+emulate a two-core machine running 32-bit RHEL6 built on the \# kernel for CentOS6 
+with 4GB of RAM and one 60GB harddrive.
+
+\subsection{Considerations}
+There were several aspects that we considered in order to obtain our data, 
+including our measurement technique, file system caching, noise, and validation.
+
+\subsubsection{Timer}
+For our measurements we used the rdtsc and rdtscp assembly instructions, which loads the current timestamp counter value (in cycles) into the designated registers. In order to guarantee in-order execution of our instructions, we inserted the cpuid instruction ahead of rdtsc to get the timestamp value before the function we wanted to measure. We then used rdtscp to guarantee completion of the measured function before reading timestamp counter again.
+
+In order to verify the accuracy of our timer, we first compared the time measured 
+using rdtsc/rdtscp with gettimeofday in the non-virtual environment. We found that 
+our measured values were consistent. To calculate the time we divided the cycles from rdtsc/rdtscp by the processor frequency.
+
+\subsubsection{Flushing and Clearing Buffer Cache}
+The cache was an important factor in all of our tests. When running our tests on the
+virtual machine we were careful to clear both the guest and the host caches when 
+necessary. Since the VM runs as a process on the host, memory accessed by the VM
+are cached in the host as well. However, flushing the cache on the VM does not 
+flush the cache of the host due to the principle of isolation. To deal with this 
+issue, whenever we flush the cache on the VM we issue a message to the host through
+a certain port. The host listens to this port and thus flushes the cache on receipt
+of the message.
+
+\subsubsection{Test Files}
+We used the following command to generate arbitrary sized files containing random
+data from which to read, where outputFilePath is the path to the outputted file and numMB is the number of MB to generate.
+
+\begin{verbatim}
+dd if=/dev/urandom of="outputFilePath" bs=1MB count=numMB
+\end{verbatim}
+
+\subsubsection{Noise}
+During our experiments we encountered a significant amount of noise in our timing measurements. In order to address this, we used the minimum instead of the average. 
+We argue that this is a valid metric given that disk accesses experience a minimum latency and thus our data is bounded on the low end. This also reduces the noise on the upper end by eliminating large outliers.
+
+\subsubsection{Validation}
+In order to verify the accuracy of our data we used several Linux utilities such as
+lscpu. 
+
+Flesh this out a little bit perhaps.
+
