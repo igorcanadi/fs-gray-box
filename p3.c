@@ -8,12 +8,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #define TEST_FILE "/scratch/.tmphugefile40GB"
-#define GB 1024*1024*1204LL
+#define GB 1024*1024*1024LL
 #define FROM_SIZE GB
 #define TO_SIZE 24*GB
 #define STEP GB
 #define RUNS 3
-#define BUFFER_SIZE 20*1024*1024 // 20MB
+#define BUFFER_SIZE 20*1024*1024LL // 20MB
 #define BALLOON_SIZE 10*GB
 #define DO_THE_BALLOONING
 
