@@ -1,13 +1,17 @@
-Results intro blah blah
+In our experiments, we sought to find and compare four different aspects of the 
+file system in a host OS running natively on a machine and in a guest OS running
+on top of the host. We found and compared the ideal buffer size for random file 
+access, prefetch size, file cache size, and at what sizes the file system adds 
+another layer of inode pointers in the following subsections.
 
-\subsection{What is ideal buffer size for random file access?}
+\subsection{Ideal Buffer Size for Random I/O}
 \input{p1}
 
-\subsection{Measuring prefetching effects}
+\subsection{Prefetch Size}
 \input{p2}
 
-\subsection{Measuring file cache size}
+\subsection{File Cache Size}
 \input{p3}
 
-\subsection{Measuring write latency}
+\subsection{Inode Pointer Indirection}
 \input{p4}

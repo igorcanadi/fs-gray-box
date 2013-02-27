@@ -36,7 +36,8 @@ We used the following command to generate arbitrary sized files containing rando
 data from which to read, where outputFilePath is the path to the outputted file and numMB is the number of MB to generate.
 
 \begin{verbatim}
-dd if=/dev/urandom of="outputFilePath" bs=1MB count=numMB
+dd if=/dev/urandom of="outputFilePath" 
+   bs=1MB count=numMB
 \end{verbatim}
 
 \subsubsection{Noise}
