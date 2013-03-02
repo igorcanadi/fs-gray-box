@@ -7,8 +7,8 @@ and two 600GB 15K RPM harddrives. Note, however, that during our experiments
 we restricted disk accesses to only one harddrive.
 
 In order to perform our comparison with a virtual machine, we used VMware to
-emulate a two-core machine running 32-bit RHEL6 built on the \# kernel for CentOS6 
-with 4GB of RAM and one 60GB harddrive.
+emulate a two-core machine running 32-bit RHEL6 built on the Linux 2.6.32 
+kernel for CentOS6 with 4GB of RAM and one 60GB harddrive.
 
 \subsection{Considerations}
 There were several aspects that we considered in order to obtain our data, 
@@ -41,12 +41,9 @@ dd if=/dev/urandom of="outputFilePath"
 \end{verbatim}
 
 \subsubsection{Noise}
-During our experiments we encountered a significant amount of noise in our timing measurements. In order to address this, we used the minimum instead of the average. 
-We argue that this is a valid metric given that disk accesses experience a minimum latency and thus our data is bounded on the low end. This also reduces the noise on the upper end by eliminating large outliers.
+During our experiments we encountered a significant amount of noise in our timing measurements. In order to address this, we used the minimum instead of the average for some experiments. We argue that this is a valid metric given that disk accesses experience a minimum latency and thus our data is bounded on the low end. This also reduces the noise on the upper end by eliminating large outliers.
 
 \subsubsection{Validation}
-In order to verify the accuracy of our data we used several Linux utilities such as
-lscpu. 
-
-Flesh this out a little bit perhaps.
+In order to verify the accuracy of our data we used several Linux functions such as
+getpagesize(),, and .
 

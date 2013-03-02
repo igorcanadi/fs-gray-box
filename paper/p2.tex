@@ -11,49 +11,54 @@ parameters in the kernel code, but it is typically 32 pages. In our system, we h
 4KB pages so we expect the readahead size to grow exponentially and then plateau at
 the maximum window size of 128KB. We expect the same for our virtual machine, which has the same readahead algorithm and page size.
 
+\begin{figure}[t!]
+	\begin{algorithmic}
+		\STATE open $file$
+		\STATE flush cache
+		\FOR{$i = $0 \TO $MAX\_READS$}
+		\STATE start\_timer
+		\STATE Read READ\_SIZE bytes
+		\STATE end\_timer and save the result
+		\STATE Wait 100ms
+		\ENDFOR
+		\STATE close $file$
+		\STATE report recorded times
+	\end{algorithmic}
+	\caption{Pseudocode for measuring prefetch size}
+	\label{fig:p2_code}
+\end{figure}
+
+\begin{figure}[hb!]
+	\begin{subfigure}[t]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{./figures/p2_big.pdf}
+	\caption{A broad view of latency versus number of read bytes}
+	\label{fig:p2_graph_big}
+	\end{subfigure}
+	
+	\begin{subfigure}[t]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{./figures/p2_small.pdf}
+	\caption{A close up view of latency versus number of read bytes}
+	\label{fig:p2_graph_small}
+	\end{subfigure}
+	\caption{Time to read 512KB blocks with respect to total number of KB read sequentially from a file}
+\end{figure}
+
 Since the read latency is much greater when the requested page is not in the page 
 cache, we can find the prefetch size by performing sequential reads and determining
 the sizes in which spikes occur. We assume that the lookahead index is the last 
 page of the readahead window. With this in mind, we wrote the code of 
-Algorithm~\ref{alg:p2_code} to measure the prefetch size. In our code, we flush 
+Figure~\ref{fig:p2_code} to measure the prefetch size. In our code, we flush 
 the cache before the initial read and measure the time to read READ\_SIZE number of
 bytes at a time. We then wait 100ms to allow time for pages to be prefetched. This
 eliminates false positives in the case where the read requests occur faster than
 the data can be fetched from disk, resulting in a page fault.
 
-%\begin{algorithmic}[h]
-%	open file
-%	flush cache
-%	\for{i = 0 \to MAX_READS}
-%	\state{
-%	t1 = rdtsc_start()
-%	read(READ_SIZE)	\comment{Read READ_SIZE bytes}
-%	t2 = rdtsc_end()
-%	}
-%	wait 100ms
-%	\endfor
-%	close file
-%	\caption{Pseudocode for measuring prefetch size}
-%	\label{alg:p2_code}
-%\end{algorithmic}
-
 Figure~\ref{fig:p2_graph_big} shows the read latency for a READ\_SIZE of 512B with
-respect to the total number of bytes read. We see spikes for the initial read, and
-then at increasing intervals of 4KB, 12KB, 32KB, and 64KB, and then plateaus at 
-128KB, following an exponential growth until it hits the maximum prefetch size as 
-we expect.  
-
-\begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{./figures/p2_big.pdf}
-	\caption{Time to read 512KB blocks with respect to total number of KB read sequentially from a file}
-	\label{fig:p2_graph_big}
-\end{figure}
-
-\begin{figure}[h]
-	\includegraphics[width=0.5\textwidth]{./figures/p2_small.pdf}
-	\caption{Time to read 512KB blocks with respect to total number of KB read sequentially from a file}
-	\label{fig:p2_graph_small}
-\end{figure}
+respect to the total number of bytes read. We see spikes for the host and VM at the same
+places in the read sequence. We observe high latency for the initial read, and
+then at increasing intervals of 4KB, 12KB, 32KB, and 64KB. After this the spikes occur
+at fixed intervals of 128KB. Thus, readahead behaves as we expect with an window that
+grows until it reaches the maximum prefetch size.
 
 
 

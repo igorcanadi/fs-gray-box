@@ -38,16 +38,18 @@ algorithm interpret both reads as random. Moreover, we flushed the cache in
 between each change of the readSize. 
 
 \begin{figure}[h!]
-\begin{lstlisting}
-for readSize := MAX_READ_SIZE to MIN_READ_SIZE do
-   clear cache
-   open file
-   read 1B from the end of the file
-   t1 := rdtsc_start()
-   read readSize bytes from random offset 
-   t2 := rdtsc_end()
-   close file
-\end{lstlisting} 
+\begin{algorithmic}
+\FOR {$readSize =$ 512KB \TO 30MB}
+   \STATE clear cache
+   \STATE open $file$
+   \STATE read 1 byte from the end of the file
+   \STATE start\_timer
+   \STATE read $readSize$ bytes from random offset 
+   \STATE end\_timer and save the result
+   \STATE close $file$
+   \STATE report times
+\ENDFOR
+\end{algorithmic}
 \caption{Pseudocode for measuring ideal buffer size}
 \label{fig:p1code}
 \end{figure}
@@ -64,8 +66,7 @@ approach the plateau and thus the gain in throughput begins to level off.
 Note that the jump to 95.0\% maximum throughput requires doubling the read size, 
 meaning that the 10\% increase in throughput is at a high memory cost. Similarly, 
 changing the read size from 16MB to 18MB gives a 3\% increase in throughput. This 
-suggests that 7MB is a good buffer size that maximizes data transfer per second for its
-size.
+suggests that 7MB is a good buffer size that maximizes throughput for its size.
 
 \begin{figure}[ht!]
 	\includegraphics[width=0.5\textwidth]{./figures/p1.pdf}
