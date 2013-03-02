@@ -1,7 +1,7 @@
 The first parameter we measured was the ideal buffer size for random I/O 
 on a file. First, let us define what we mean by "ideal buffer size." Since
 the time to read data is affected by the amount of data read, we define ideal
-buffer size as the size in which we achieve the best throughput (Bytes/s)
+buffer size as the size in which we achieve the best throughput (data per second)
 with the smallest amount of memory. 
 
 Given the classical formula of Equation~\ref{eq:p1_latency} for the latency 
@@ -29,7 +29,7 @@ tables, so we expect the VM throughput to be approximately the same as in the ho
 In order to measure the throughput, we used the test described by the pseudocode 
 of Figure~\ref{fig:p1code}. We first measured the latency to read a
 certain number of bytes from disk. Then we calculated throughput T by dividing 
-readSize by the latency. However, there were a few aspects we needed 
+readSize by the measured latency. However, there were a few aspects we needed 
 to consider in our experiment. Since prefetch occurs on sequential read, 
 we avoided the problem of measuring the time to retrieve data from the cache instead
 of disk access time by first reading a single byte from the end of the file
@@ -53,9 +53,23 @@ for readSize := MAX_READ_SIZE to MIN_READ_SIZE do
 \end{figure}
 
 %% Graphs, Results
+In the graph of Figure~\ref{fig:p1graph} we see that both the VM and the host behave
+as we expected, with lower read sizes having lower throughput and higher read sizes
+having increasing throughput until it approaches an asymptote. We find that the 
+maximum throughput is approximately 185MB/s in both cases. Now, we examine a few
+points in Figure~\ref{fig:p1graph} to infer the ideal buffer size. We see that when 
+the read sizes corresponding throughputs at 86.5\%, 95.0\%, and 98.2\% of the maximum 
+throughput are 7MB, 16MB, and 18MB, respectively. We see that at 7MB we just begin to 
+approach the plateau and thus the gain in throughput begins to level off.
+Note that the jump to 95.0\% maximum throughput requires doubling the read size, 
+meaning that the 10\% increase in throughput is at a high memory cost. Similarly, 
+changing the read size from 16MB to 18MB gives a 3\% increase in throughput. This 
+suggests that 7MB is a good buffer size that maximizes data transfer per second for its
+size.
+
 \begin{figure}[ht!]
 	\includegraphics[width=0.5\textwidth]{./figures/p1.pdf}
-	\caption{}
+	\caption{Throughput of random read size }
 	\label{fig:p1graph}
 \end{figure}
 
