@@ -9,7 +9,8 @@ references this page, the algorithm grows the readahead window and asynchronousl
 fetches the next set of pages from disk. The maximum window is determined by 
 parameters in the kernel code, but it is typically 32 pages. In our system, we have
 4KB pages so we expect the readahead size to grow exponentially and then plateau at
-the maximum window size of 128KB. We expect the same for our virtual machine, which has the same readahead algorithm and page size.
+the maximum window size of 128KB. We expect the same for our virtual machine, which 
+has the same readahead algorithm and page size.
 
 \begin{figure}[t!]
 	\begin{algorithmic}

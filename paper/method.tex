@@ -6,9 +6,9 @@ Xeon\textsuperscript{\textregistered} E5620 2.40GHz Processor, 24GB of RAM,
 and two 600GB 15K RPM harddrives. Note, however, that during our experiments 
 we restricted disk accesses to only one harddrive.
 
-In order to perform our comparison with a virtual machine, we used VMware to
-emulate a two-core machine running 32-bit RHEL6 built on the Linux 2.6.32 
-kernel for CentOS6 with 4GB of RAM and one 60GB harddrive.
+In order to perform our comparison with a virtual machine, we used VMware 
+workstation to emulate a two-core machine running 32-bit RHEL6 built on the 
+Linux 2.6.32 kernel for CentOS6 with 4GB of RAM and one 60GB harddrive.
 
 \subsection{Considerations}
 There were several aspects that we considered in order to obtain our data, 
@@ -19,17 +19,18 @@ For our measurements we used the rdtsc and rdtscp assembly instructions, which l
 
 In order to verify the accuracy of our timer, we first compared the time measured 
 using rdtsc/rdtscp with gettimeofday in the non-virtual environment. We found that 
-our measured values were consistent. To calculate the time we divided the cycles from rdtsc/rdtscp by the processor frequency.
+our measured values were consistent. We performed this same task on the VM and got
+the same result. To calculate the time we divided the cycles from rdtsc/rdtscp by the processor frequency.
 
 \subsubsection{Flushing and Clearing Buffer Cache}
 The cache was an important factor in all of our tests. When running our tests on the
 virtual machine we were careful to clear both the guest and the host caches when 
 necessary. Since the VM runs as a process on the host, memory accessed by the VM
-are cached in the host as well. However, flushing the cache on the VM does not 
-flush the cache of the host due to the principle of isolation. To deal with this 
-issue, whenever we flush the cache on the VM we issue a message to the host through
-a certain port. The host listens to this port and thus flushes the cache on receipt
-of the message.
+are cached in the host as well. However, clearing the cache on the VM does not 
+clear the cache of the host due to the principle of isolation. To deal with this 
+issue, whenever we clear the cache on the VM we issue a message to the host through
+a certain port. A process on the host listens to this port and clears the cache on
+receipt of the message.
 
 \subsubsection{Test Files}
 We used the following command to generate arbitrary sized files containing random
@@ -41,9 +42,15 @@ dd if=/dev/urandom of="outputFilePath"
 \end{verbatim}
 
 \subsubsection{Noise}
-During our experiments we encountered a significant amount of noise in our timing measurements. In order to address this, we used the minimum instead of the average for some experiments. We argue that this is a valid metric given that disk accesses experience a minimum latency and thus our data is bounded on the low end. This also reduces the noise on the upper end by eliminating large outliers.
+During our experiments we encountered a significant amount of noise in our 
+timing measurements. In order to address this, we used the minimum instead of 
+the average for some experiments. We argue that this is a valid metric given 
+that disk accesses experience a minimum latency due to the time to transfer data
+and using the minimum over many runs reduces the effects of variable latencies 
+such as seek time and controller delay. This also mitigates the effect of 
+latency from unrelated sources.
 
 \subsubsection{Validation}
-In order to verify the accuracy of our data we used several Linux functions such as
-getpagesize(),, and .
+In order to verify the accuracy of our data we used several Linux functions such
+as getpagesize(). 
 

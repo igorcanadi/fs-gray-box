@@ -7,18 +7,17 @@
 #include <sys/stat.h>
 #include "rdtsc.h"
 
-#define MIN_READ_SZ    512*1024
-#define MAX_READ_SZ    (30*1024*1024) // Maximum read size, bytes
-#define MAX_NUM_READS 1024*1024
-#define NUM_RUNS    20
-#define STEP_TRANSFORM(x)    x -= MIN_READ_SZ
+#define MIN_READ_SZ    512
+#define MAX_READ_SZ    1024*1024 // Maximum read size, bytes
+#define MAX_NUM_READS  128
+#define NUM_RUNS       20
+#define STEP_TRANSFORM(x)    x += MIN_READ_SZ
 
 // Vary read size 
 unsigned int runExp(const char *fName, uint64_t *res){
 
     int fd;    // File descriptor 
-    uint64_t t1, t2, t;
-    int read_out;
+    uint64_t t1, t2;
 
     off64_t offset;
     off64_t size;
@@ -28,37 +27,34 @@ unsigned int runExp(const char *fName, uint64_t *res){
     unsigned int index;
 
     // Perform random read
-    for (readSize = MAX_READ_SZ, index = 0; readSize >= MIN_READ_SZ && index < MAX_NUM_READS; STEP_TRANSFORM(readSize), index++){
+    for (readSize = MIN_READ_SZ, index = 0; readSize <= MAX_READ_SZ && index < MAX_NUM_READS; STEP_TRANSFORM(readSize), index++){
         system("sync; echo 3 >| /proc/sys/vm/drop_caches");
         if ( (fd = open(fName, O_RDONLY|O_LARGEFILE)) < 0){
             perror("fopen error");
             exit(-1);
         }
-        size = lseek64(fd, -1024, SEEK_END) + 1024;
-        if(read(fd, buf, 1) != 1){
+        
+	size = lseek64(fd, -1024, SEEK_END) + 1024;
+        
+	if(read(fd, buf, 1) != 1){
             perror("read error");
             exit(-1);
         }
         
         // Read from random X * read Size
-        offset = ((long long)random() * 100 + random()) % (size - readSize);
+//        offset = ((long long)random() * 100 + random()) % (size - readSize);
         
-        offset = offset - (offset % readSize);
-        lseek(fd, offset, SEEK_SET);
+//        offset = offset - (offset % readSize);
+	offset = 0;
+	lseek64(fd, offset, SEEK_SET);
 
-        read_out = 0;
         t1 = rdtsc_start();
-        while (read_out != readSize) {
-            t = read(fd, buf + read_out, readSize);
-            if (t < 0) break;
-            read_out += t;
-        }
+        if( read(fd, buf, readSize) != readSize){
+        	perror("read error");
+		exit(-1);
+	}
         t2 = rdtsc_end();
-        if (read_out != readSize) {
-            printf("# reads %d\n", index);
-            break;    // Read i bytes
-        }
-
+        
         if (res[index] == 0 || (t2-t1) < res[index]){
             res[index] = t2-t1;
         }
@@ -87,10 +83,12 @@ int main(int argc, char *argv[]){
     }
 
     // Print results
-    for(i = 0, readSize=MAX_READ_SZ; i < maxInd; i++, STEP_TRANSFORM(readSize)){
-        printf("%u %lf\n", readSize, (double)intervals[i]/readSize);
+    for(i = 0, readSize=MIN_READ_SZ; i < maxInd; i++, STEP_TRANSFORM(readSize)){
+        printf("%u %lf\n", readSize, (double)(readSize)/intervals[i]);
     }
     
+    free(intervals);
+
     return 0;
 
 }
