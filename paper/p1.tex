@@ -11,40 +11,43 @@ of a magnetic disk access:
 Latency = S + R + DataSize/TransferRate + C
 \end{equation}
 
-where S = Seek Time, R = Rotational Delay, and C = Controller delay, we 
-derive the throughput as $T = \frac{DataSize}{Latency}$. We assume that S, R, 
-and C are roughly constant regardless of size, so we represent them as constant K and simplify to Equation~\ref{eq:p1_throughput}:
+where $S$ = Seek Time, $R$ = Rotational Delay, and $C$ = Controller delay, we 
+derive the throughput as $T = \frac{DataSize}{Latency}$. We assume that $S$, $R$, 
+and $C$ are roughly constant regardless of size, so we represent them as constant 
+$K$ and simplify to Equation~\ref{eq:p1_throughput}:
 
 \begin{equation}\label{eq:p1_throughput}
 T = \frac{DataSize}{K + \frac{DataSize}{TransferRate}}
 \end{equation}
 
 We expect the throughput to follow the behavior of a rational function
-with an asymptote equalling TransferRate as DataSize becomes infinitely large.
-Thus, the ideal buffer size is defined as the minimum DataSize for which the 
-throughput is equal to the TransferRate. In the virtual machine case, we assume 
+with an asymptote equalling $TransferRate$ as $DataSize$ becomes infinitely large.
+Thus, the ideal buffer size for large reads is defined as the minimum DataSize for 
+which the throughput is approximately equal to the $TransferRate$. There is however, 
+one more thing to consider. The disk has a minimum transfer size
+(block size) so in actuality $DataSize = \lceil\frac{RequestSize}{BlockSize}\rceil$.
+We therefore expect that the best buffer size will be some N*BlockSize since
+if $RequestSize$ is less than $BlockSize$, the disk will fetch more data than
+requested and result in excess disk latency. In the virtual machine case, we assume 
 that the overhead due to address translation is marginal due to the shadow page 
 tables, so we expect the VM throughput to be approximately the same as in the host.
 
-In order to measure the throughput, we used the test described by the pseudocode 
-of Figure~\ref{fig:p1code}. We first measured the latency to read a
-certain number of bytes from disk. Then we calculated throughput T by dividing 
-readSize by the measured latency. However, there were a few aspects we needed 
-to consider in our experiment. Since prefetch occurs on sequential read, 
-we avoided the problem of measuring the time to retrieve data from the cache instead
-of disk access time by first reading a single byte from the end of the file
-and then reading from a random offset, essentially making the Linux readahead
-algorithm interpret both reads as random. Moreover, we flushed the cache in
-between each change of the readSize. 
+To find both the minimum transfer size of the disk and to find throughput, we used 
+the test described by the pseudocode of Figure~\ref{fig:p1code} with some minor 
+variations. To find the block size, we used $MIN = 512$ and $MAX = 64KB $ and 
+incremented in steps of $MIN$ bytes. We used an $offset$ of 0 to ensure block 
+aligned reads. To obtain the throughput of large reads, we used $MIN = 500KB$ and
+$MAX = 30MB$. In both we measured the latency to read $readSize$ bytes from disk.
+Then we calculated throughput $T$ by dividing readSize by the measured latency. 
 
-\begin{figure}[h!]
+\begin{figure}[b]
 \begin{algorithmic}
-\FOR {$readSize =$ 512KB \TO 30MB}
+\FOR {$readSize$ = MIN \TO MAX}
    \STATE clear cache
    \STATE open $file$
    \STATE read 1 byte from the end of the file
    \STATE start\_timer
-   \STATE read $readSize$ bytes from random offset 
+   \STATE read $readSize$ bytes from $offset$
    \STATE end\_timer and save the result
    \STATE close $file$
    \STATE report times
@@ -52,6 +55,28 @@ between each change of the readSize.
 \end{algorithmic}
 \caption{Pseudocode for measuring ideal buffer size}
 \label{fig:p1code}
+\end{figure}
+
+However, there were a few aspects we needed to consider in our experiment. 
+Since prefetch occurs on sequential read, we avoided the problem of measuring the 
+time to retrieve data from the cache instead of disk access time by first reading 
+a single byte from the end of the file and then reading from the beginning of the file, 
+essentially making the Linux readahead algorithm interpret both reads as random. 
+Moreover, we flushed the cache in between each change of the readSize and closed
+the file after each read to reset the readahead.
+
+\begin{figure}[t]
+	\begin{subfigure}{0.5\textwidth}
+%	\includegraphics[width=\textwidth]{}
+	\caption{Disk latency for small random read sizes}
+	\label{fig:p1block}
+	\end{subfigure}
+
+	\begin{subfigure}{0.5\textwidth}
+	\includegraphics[width=\textwidth]{./figures/p1.pdf}
+	\caption{Data throughput for large random read sizes}
+	\label{fig:p1graph}
+	\end{subfigure}
 \end{figure}
 
 %% Graphs, Results
@@ -68,10 +93,5 @@ meaning that the 10\% increase in throughput is at a high memory cost. Similarly
 changing the read size from 16MB to 18MB gives a 3\% increase in throughput. This 
 suggests that 7MB is a good buffer size that maximizes throughput for its size.
 
-\begin{figure}[ht!]
-	\includegraphics[width=0.5\textwidth]{./figures/p1.pdf}
-	\caption{Throughput of random read size }
-	\label{fig:p1graph}
-\end{figure}
 
 

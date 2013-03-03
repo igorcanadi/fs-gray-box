@@ -6,7 +6,8 @@ readahead algorithm starts with an initial read size based on the first read and
 subsequent requests grows the readahead window until it reaches the maximum size. 
 The readahead algorithm marks a page at the lookahead index. When the application 
 references this page, the algorithm grows the readahead window and asynchronously 
-fetches the next set of pages from disk. The maximum window is determined by 
+fetches the next set of pages from disk.\cite{wu2010sequential}\cite{wu2007linux} 
+The maximum window is determined by 
 parameters in the kernel code, but it is typically 32 pages. In our system, we have
 4KB pages so we expect the readahead size to grow exponentially and then plateau at
 the maximum window size of 128KB. We expect the same for our virtual machine, which 
@@ -44,9 +45,10 @@ has the same readahead algorithm and page size since it uses the same kernel.
 	\caption{Time to read 512KB blocks with respect to total number of KB read sequentially from a file}
 \end{figure}
 
-Since the read latency is much greater when the requested page is not in the page 
-cache, we can find the prefetch size by performing sequential reads and determining
-the sizes in which spikes occur. We assume that the lookahead index is the last 
+Since the latency is higher (due to trap into readahead) when either there is a page 
+fault or if the application references the page indicated by the lookahead index,
+we can find the prefetch size by performing sequential reads and determining
+the sizes in which spikes occur. Typically the lookahead index refers to the first 
 page of the readahead window. With this in mind, we wrote the code of 
 Figure~\ref{fig:p2_code} to measure the prefetch size. In our code, we flush 
 the cache before the initial read and measure the time to read READ\_SIZE number of
@@ -59,8 +61,7 @@ respect to the total number of bytes read. We see spikes for the host and VM at 
 same places in the read sequence. We observe high latency for the initial read, and
 then at increasing intervals of 4KB, 12KB, 32KB, and 64KB. After this the spikes 
 occur at fixed intervals of 128KB. Thus, readahead behaves as we expect with a
-window that grows until it reaches the maximum prefetch size.
-
+window that grows until it reaches the maximum prefetch size. 
 A closer inspection of the graph in Figure~\ref{fig:p2_graph_small} shows that the 
 read latency is consistently greater than the latency on the host machine by a 
 approximately 2$\mu$s. This suggests that the VM incurs some fixed overhead on 

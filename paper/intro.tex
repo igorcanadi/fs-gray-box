@@ -9,8 +9,9 @@ In particular, we examined the ideal buffer size for random I/O, sequential
 prefetch size, file cache size, and the file size which causes the file system 
 to add an additional layer of indirection. We found that the host and VM filesystem
 had similar characteristics across all measured parameters. For instance, the 
-optimal size to randomly read a file was 4KB, the page size of the system, and 
-the maximum prefetch size was 128KB for both the host and the VM. We also 
+optimal size to randomly read a file was N*4KB, a multiple of the page size of the 
+system, and that for large reads the best through put was achieved at approximately
+7MB. The maximum prefetch size was 128KB for both the host and the VM. We also 
 determined that the file cache was related to the amount of physical memory 
 available while our process was running. Finally, we found that for both the host
 and VM that the file size where another level of inodes is added was \#MB.
