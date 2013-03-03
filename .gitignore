@@ -28,8 +28,15 @@
 */*.blg
 */*.gz
 /paper/paper.aux
+/paper/paper.cjk
 
 # R crap
 .Rapp.history
 /data/.RData
 /data/.Rhistory
+.RData
+.Rhistory
+
+# dropbox
+.DS_Store
+/paper/figures/.DS_Store
