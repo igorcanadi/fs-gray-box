@@ -1,8 +1,22 @@
 For our project we chose to measure and compare several ext4 filesystem parameters
 in an operating system (OS) running directly on a machine (host) and in the same 
-OS running on a virtual machine (VM) on top of the host OS. 
+OS running on a virtual machine (VM) on top of the host OS. In addition to being an 
+interesting study in the inner workings of the ext4 filesystem, this paper seeks to
+elucidate the similarities and differences between host and virtual machine I/O in
+terms of latency, and also reveal the way I/O is virtualized in a VM.
 
-Content:
-Overview of what we did, our results
-Brief explanation of ext4..?
+In particular, we examined the ideal buffer size for random I/O, sequential 
+prefetch size, file cache size, and the file size which causes the file system 
+to add an additional layer of indirection. We found that the host and VM filesystem
+had similar characteristics across all measured parameters. For instance, the 
+optimal size to randomly read a file was 4KB, the page size of the system, and 
+the maximum prefetch size was 128KB for both the host and the VM. We also 
+determined that the file cache was related to the amount of physical memory 
+available while our process was running. Finally, we found that for both the host
+and VM that the file size where another level of inodes is added was \#MB.
+
+The rest of the paper is organized as follows. In Section~\ref{sec:method} we 
+discuss our experimental setup and methodology for our experiments. In 
+Section~\ref{sec:results} we discuss our experiments and results in detail. 
+Finally, in Section~\ref{sec:conc} we summarize our findings and conclusions.
 

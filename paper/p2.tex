@@ -10,12 +10,12 @@ fetches the next set of pages from disk. The maximum window is determined by
 parameters in the kernel code, but it is typically 32 pages. In our system, we have
 4KB pages so we expect the readahead size to grow exponentially and then plateau at
 the maximum window size of 128KB. We expect the same for our virtual machine, which 
-has the same readahead algorithm and page size.
+has the same readahead algorithm and page size since it uses the same kernel.
 
 \begin{figure}[t!]
 	\begin{algorithmic}
 		\STATE open $file$
-		\STATE flush cache
+		\STATE clear cache
 		\FOR{$i = $0 \TO $MAX\_READS$}
 		\STATE start\_timer
 		\STATE Read READ\_SIZE bytes
@@ -55,11 +55,17 @@ eliminates false positives in the case where the read requests occur faster than
 the data can be fetched from disk, resulting in a page fault.
 
 Figure~\ref{fig:p2_graph_big} shows the read latency for a READ\_SIZE of 512B with
-respect to the total number of bytes read. We see spikes for the host and VM at the same
-places in the read sequence. We observe high latency for the initial read, and
-then at increasing intervals of 4KB, 12KB, 32KB, and 64KB. After this the spikes occur
-at fixed intervals of 128KB. Thus, readahead behaves as we expect with an window that
-grows until it reaches the maximum prefetch size.
+respect to the total number of bytes read. We see spikes for the host and VM at the
+same places in the read sequence. We observe high latency for the initial read, and
+then at increasing intervals of 4KB, 12KB, 32KB, and 64KB. After this the spikes 
+occur at fixed intervals of 128KB. Thus, readahead behaves as we expect with a
+window that grows until it reaches the maximum prefetch size.
+
+A closer inspection of the graph in Figure~\ref{fig:p2_graph_small} shows that the 
+read latency is consistently greater than the latency on the host machine by a 
+approximately 2$\mu$s. This suggests that the VM incurs some fixed overhead on 
+reads from disk. This may be due to the hypervisor updating the VM shadow page 
+table on a page fault.
 
 
 
