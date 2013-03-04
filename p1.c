@@ -27,8 +27,11 @@ unsigned int runExp(const char *fName, uint64_t *res){
     unsigned int index;
 
     // Perform random read
+    
+    system("sync; echo 3 >| /proc/sys/vm/drop_caches");
+
     for (readSize = MIN_READ_SZ, index = 0; readSize <= MAX_READ_SZ && index < MAX_NUM_READS; STEP_TRANSFORM(readSize), index++){
-        system("sync; echo 3 >| /proc/sys/vm/drop_caches");
+//        system("sync; echo 3 >| /proc/sys/vm/drop_caches");
         if ( (fd = open(fName, O_RDONLY|O_LARGEFILE)) < 0){
             perror("fopen error");
             exit(-1);
