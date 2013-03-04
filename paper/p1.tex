@@ -1,5 +1,5 @@
 The first parameter we measured was the ideal buffer size for random I/O 
-on a file. First, let us define what we mean by "ideal buffer size." Since
+on a file. First, let us define what we mean by ``ideal buffer size.'' Since
 the time to read data is affected by the amount of data read, we define ideal
 buffer size as the size in which we achieve the best throughput (data per second)
 with the smallest amount of memory. 
@@ -52,8 +52,8 @@ tables, so we expect the VM throughput to be approximately the same as in the ho
 
 To find both the minimum transfer size of the disk and to find throughput, we used 
 the test described by the pseudocode of Figure~\ref{fig:p1code} with some minor 
-variations. To find the block size, we used $MIN = 512$ and $MAX = 64KB $. 
-We used an $offset$ of 0 to ensure block aligned reads. We did not clear the cache
+variations. To find the block size, we used $MIN = 512B$ and $MAX = 64KB$. 
+We used $offset=0$ to ensure block aligned reads. We did not clear the cache
 between reads in the same run since we wished to measure the minimum number of bytes
 fetched from disk. To obtain the throughput of large reads, we used $MIN = 500KB$ and
 $MAX = 30MB$. In both we measured the latency to read $readSize$ bytes from disk.
