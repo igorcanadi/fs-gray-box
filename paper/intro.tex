@@ -6,13 +6,13 @@ elucidate the similarities and differences between host and virtual machine I/O 
 terms of latency, and also reveal the way I/O is virtualized in a VM.
 
 In particular, we determined the ideal buffer size for random I/O by preforming random reads
-of varying sizes. Next, we reverse engineered prefetch size linux kernel uses to speed up
-sequential reads by measuring sequential read latency. We were also interested in file cache size.
-We measured throughput of repeated reads of a big file, which decreased substantially as soon
-as the file was bigger than the cache. Finally, we were tried to determine file size that triggers 
-file system to add a layer of indirection between inode and data blocks. By measuring one-byte
+of varying sizes. Next, we reverse engineered the prefetch size that the Linux kernel uses to speed up
+sequential reads by measuring sequential read latency. We were also interested in the file cache size.
+We measured the throughput of repeated reads of a big file, which decreased substantially as soon
+as the file was bigger than the cache. Finally, we tried to determine the file size that triggers the
+file system to add a layer of indirection between the inode and data blocks. By measuring the one-byte
 append latency to a file, we expected to see higher latency when an append causes file system
-to write additional metadata for indirect pointer.
+to write additional metadata for an indirect pointer.
 
 We found that the host and VM filesystem had similar characteristics across all measured parameters. For instance, the 
 optimal size to randomly read a file was N*4KB, a multiple of the page size of the 
@@ -20,8 +20,8 @@ system, and that for large reads the best through put was achieved at approximat
 7MB. The maximum prefetch size was 128KB for both the host and the VM. We also 
 determined that the file cache size was related to the amount of physical memory 
 available while our process was running. Finally, we proved that there is no single file
-size after which ext4 adds another level of indirection in host environment. We couldn't prove
-similar hypothesis on a virtual machine.
+size for which ext4 adds another level of indirection in host environment. We could not prove a
+similar hypothesis on the virtual machine.
 
 The rest of the paper is organized as follows. In Section~\ref{sec:method} we 
 discuss our experimental setup and methodology for our experiments. In 
