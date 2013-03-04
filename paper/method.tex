@@ -12,7 +12,7 @@ Linux 2.6.32 kernel for CentOS6 with 8GB of RAM and one 60GB virtual harddrive.
 
 \subsection{Considerations}
 There were several aspects that we considered in order to obtain our data, 
-including our measurement technique, file system caching, noise, and validation.
+including our measurement technique, file system caching, and noisen.
 
 \subsubsection{Timer}
 For our measurements we used the \texttt{rdtsc} and \texttt{rdtscp} assembly instructions, which load 
@@ -20,7 +20,7 @@ the current timestamp counter value (in cycles) into the designated registers. I
 order to guarantee in-order execution of our instructions, we inserted the cpuid 
 instruction ahead of \texttt{rdtsc} to get the timestamp value before the function we wanted 
 to measure. We then used \texttt{rdtscp} to guarantee completion of the measured function 
-before reading timestamp counter again. We used advices on measuring from Intel's white paper\cite{rdtsc}.
+before reading timestamp counter again. We used were guided by suggestions from Intel's white paper\cite{rdtsc}.
 
 In order to verify the accuracy of our timer, we first compared the time measured 
 using \texttt{rdtsc/rdtscp} with gettimeofday in the non-virtual environment. We calculated
@@ -55,7 +55,7 @@ we collected data over repetitive runs. We also used the minimum instead of the 
 over multiple runs for some experiments. We argue that this is a valid metric given 
 that disk accesses experience a minimum latency due to the time to transfer data.
 In our experiments we care mostly about the lower bound latency, and care less about 
-variability due to other factors such as process getting descheduled or seek time. Also,
-this helped us detect when some of the reads were served from the cache, since the minimum 
-for that data point was suspiciously low. On other hand, it would only slightly affect the average,
-which would be harder to detect.
+variability due to other factors such as processes getting descheduled or seek time. 
+This also helped us detect when some of the reads were served from the cache, since the minimum 
+for that data point was suspiciously low. In contrast, a cache hit would only slightly affect the average,
+making it harder to detect.
