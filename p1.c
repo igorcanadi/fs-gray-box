@@ -56,7 +56,7 @@ unsigned int runExp(const char *fName, uint64_t *res){
         t2 = rdtsc_end();
         
         if (res[index] == 0 || (t2-t1) < res[index]){
-            res[index] = t2-t1;
+            res[index= t2-t1;
         }
         close(fd);    
     }
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
 
     // Print results
     for(i = 0, readSize=MIN_READ_SZ; i < maxInd; i++, STEP_TRANSFORM(readSize)){
-        printf("%u %lf\n", readSize, (double)(readSize)/intervals[i]);
+        printf("%u %llu\n", readSize, intervals[i]);
     }
     
     free(intervals);
