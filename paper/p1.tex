@@ -21,24 +21,16 @@ T = \frac{DataSize}{K + \frac{DataSize}{TransferRate}}
 \end{equation}
 
 We expect the throughput to follow the behavior of a rational function
-with an asymptote equalling $TransferRate$ as $DataSize$ becomes infinitely large.
+with an asymptote equalling TransferRate as DataSize becomes infinitely large.
 Thus, the ideal buffer size for large reads is defined as the minimum DataSize for 
-which the throughput is approximately equal to the $TransferRate$. There is however, 
-one more thing to consider. The disk has a minimum transfer size
-(block size) so in actuality $DataSize = \lceil\frac{RequestSize}{BlockSize}\rceil$.
+which the throughput is approximately equal to the TransferRate. There is however, 
+one more thing to consider. The Linux filesystem requests sizes at a granularity of 
+block size, so in actuality $DataSize = \lceil\frac{RequestSize}{BlockSize}\rceil$.
 We therefore expect that the best buffer size will be some N*BlockSize since
-if $RequestSize$ is less than $BlockSize$, the disk will fetch more data than
+if RequestSize is less than BlockSize, the disk will fetch more data than
 requested and result in excess disk latency. In the virtual machine case, we assume 
 that the overhead due to address translation is marginal due to the shadow page 
 tables, so we expect the VM throughput to be approximately the same as in the host.
-
-To find both the minimum transfer size of the disk and to find throughput, we used 
-the test described by the pseudocode of Figure~\ref{fig:p1code} with some minor 
-variations. To find the block size, we used $MIN = 512$ and $MAX = 64KB $ and 
-incremented in steps of $MIN$ bytes. We used an $offset$ of 0 to ensure block 
-aligned reads. To obtain the throughput of large reads, we used $MIN = 500KB$ and
-$MAX = 30MB$. In both we measured the latency to read $readSize$ bytes from disk.
-Then we calculated throughput $T$ by dividing readSize by the measured latency. 
 
 \begin{figure}[b]
 \begin{algorithmic}
@@ -57,7 +49,16 @@ Then we calculated throughput $T$ by dividing readSize by the measured latency.
 \label{fig:p1code}
 \end{figure}
 
-However, there were a few aspects we needed to consider in our experiment. 
+
+To find both the minimum transfer size of the disk and to find throughput, we used 
+the test described by the pseudocode of Figure~\ref{fig:p1code} with some minor 
+variations. To find the block size, we used $MIN = 512$ and $MAX = 64KB $. 
+We used an $offset$ of 0 to ensure block aligned reads. We did not clear the cache
+between reads in the same run since we wished to measure the minimum number of bytes
+fetched from disk. To obtain the throughput of large reads, we used $MIN = 500KB$ and
+$MAX = 30MB$. In both we measured the latency to read $readSize$ bytes from disk.
+Then we calculated throughput $T$ by dividing readSize by the measured latency. 
+However, there were a few aspects we needed to consider in our throughput experiment. 
 Since prefetch occurs on sequential read, we avoided the problem of measuring the 
 time to retrieve data from the cache instead of disk access time by first reading 
 a single byte from the end of the file and then reading from the beginning of the file, 
@@ -65,22 +66,29 @@ essentially making the Linux readahead algorithm interpret both reads as random.
 Moreover, we flushed the cache in between each change of the readSize and closed
 the file after each read to reset the readahead.
 
+
 \begin{figure}[t]
 	\begin{subfigure}{0.5\textwidth}
-%	\includegraphics[width=\textwidth]{}
+	\includegraphics[width=\textwidth]{./figures/p1_new.pdf}
 	\caption{Disk latency for small random read sizes}
 	\label{fig:p1block}
 	\end{subfigure}
 
 	\begin{subfigure}{0.5\textwidth}
-	\includegraphics[width=\textwidth]{./figures/p1.pdf}
+	\includegraphics[width=\textwidth]{./figures/p1_old.pdf}
 	\caption{Data throughput for large random read sizes}
 	\label{fig:p1graph}
 	\end{subfigure}
 \end{figure}
 
 %% Graphs, Results
-In the graph of Figure~\ref{fig:p1graph} we see that both the VM and the host behave
+We see in Figure~\ref{fig:p1block} that there are peaks in latency every 4KB for 
+both the VM and the host. This suggests that the block size is 4KB, the page size
+of the system. Notice that the latency diverges linearly between the VM and host,
+implying there is some fixed latency per byte experienced by the VM. we get large
+spikes at 4KB, 16KB, and 48KB.
+In the graph of Figure~\ref{fig:p1graph} we see that throughput of 
+both the VM and the host behave
 as we expected, with lower read sizes having lower throughput and higher read sizes
 having increasing throughput until it approaches an asymptote. We find that the 
 maximum throughput is approximately 185MB/s in both cases. Now, we examine a few
