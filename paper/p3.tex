@@ -1,4 +1,4 @@
-Next, we measured the file cache size. Our hypothesis is that the file cache size is dynamic and that it depends on the amount of free memory available to the system since it would not make sense for the system to keep a lot of free pages around when they could be used to speed up sequential reads.
+Next, we measured the file cache size. Our hypothesis is that the file cache size is dynamic and that it depends on the amount of free memory available to the system since it would not make sense for the system to keep a lot of free pages around when they could be used to speed up repeated reads.
 
 To check our hypothesis, we designed two controlled experiments with different amounts of free memory available to the system. One experiment runs with most of the memory unused. In the other experiment, we allocate a huge array and fill it with random data to avoid page sharing effects. We call this array \emph{balloon}. We used a 10GB balloon in the host environment and a 3GB balloon in the virtual machine since they had different RAM sizes.
 

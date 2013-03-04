@@ -19,7 +19,7 @@ has the same readahead algorithm and page size since it uses the same kernel.
 		\STATE clear cache
 		\FOR{$i = $0 \TO $MAX\_READS$}
 		\STATE start\_timer
-		\STATE Read READ\_SIZE bytes
+		\STATE Read next $READ\_SIZE$ bytes
 		\STATE end\_timer and save the result
 		\STATE Wait 100ms
 		\ENDFOR
@@ -64,8 +64,8 @@ occur at fixed intervals of 128KB. Thus, readahead behaves as we expect with a
 window that grows until it reaches the maximum prefetch size. 
 A closer inspection of the graph in Figure~\ref{fig:p2_graph_small} shows that the 
 read latency is consistently greater than the latency on the host machine by a 
-approximately 2$\mu$s. This suggests that the VM incurs some fixed overhead on 
-reads from disk. This may be due to the hypervisor updating the VM shadow page 
+approximately 2$\mu$s, which suggests that the VM incurs some fixed overhead on 
+reads from disk. We might be seeing this effect be due to the hypervisor updating the VM shadow page 
 table on a page fault.
 
 
