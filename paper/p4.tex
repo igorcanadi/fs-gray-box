@@ -1,5 +1,15 @@
 Our final goal was to determine file sizes for which file system adds another layer of indirection. Ext4 uses extents to manage data blocks. \cite{ext4extents} Extents are organized into a tree, where each extent can point either to another extent (interior extent) or to a block group (leaf extent). A block group is a physically continuous range of blocks, where each block is 4096 bytes. Each block group can address up to $2^{15}$ continuous blocks, which is total of 128 MB. Each inode stores direct pointers to up to four leaf extents. When the file size outgrows the four existing extents and the filesystem creates a fifth extent, it also creates a new metadata block. At that point, we say that the filesystem adds one layer of indirection.
 
+
+Let us consider three scenarios that might happen when we append one block to the file:
+\begin{enumerate}
+\item \textbf{The last block group in the file is extended.} In this case, the file system writes a data block and updates one block group.
+\item \textbf{There is no more space left in the last block group.} The file system needs to create a new block group and a new extent.
+\item \textbf{There is no more space left in the last block group, and all four extents in the file inode are used.} The file system needs to create a new block group, a new extent, and also reorganize the four extents in the file inode.
+\end{enumerate}
+
+The assumption we need to make to be able to detect these events is that case 3 is considerably slower than 2 and that case 2 is considerably slower than 1. We also need to assume that any other slowdown that might happen during the process of writing bytes is uncorrelated with the file size and will be eliminated by only taking into account the lower bound of multiple runs.
+
 \begin{figure}[t!]
 \begin{algorithmic}
 \STATE create a $file$
@@ -17,17 +27,6 @@ Our final goal was to determine file sizes for which file system adds another la
 \caption{Function used to measure one-byte append latency}
 \label{fig:p4pseudo}
 \end{figure}
-
-
-
-Let us consider three scenarios that might happen when we append one block to the file:
-\begin{enumerate}
-\item \textbf{The last block group in the file is extended.} In this case, the file system writes a data block and updates one block group.
-\item \textbf{There is no more space left in the last block group.} The file system needs to create a new block group and a new extent.
-\item \textbf{There is no more space left in the last block group, and all four extents in the file inode are used.} The file system needs to create a new block group, a new extent, and also reorganize the four extents in the file inode.
-\end{enumerate}
-
-The assumption we need to make to be able to detect these events is that case 3 is considerably slower than 2 and that case 2 is considerably slower than 1. We also need to assume that any other slowdown that might happen during the process of writing bytes is uncorrelated with the file size and will be eliminated by only taking into account the lower bound of multiple runs.
 
 Group blocks in ext4 can be arbitrarily sized and depend on disk layout. If a block following the group block is used, the file system needs to create a new group block. If it is free, the file system just extends the group block. Because of this, we hypothesize that the moment when ext4 adds another layer of indirection does not depend only on file size but also on the disk layout and other factors.
 
