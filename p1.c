@@ -10,7 +10,7 @@
 #define MIN_READ_SZ    512
 #define MAX_READ_SZ    1024*1024 // Maximum read size, bytes
 #define MAX_NUM_READS  128
-#define NUM_RUNS       5
+#define NUM_RUNS       20
 #define STEP_TRANSFORM(x)    x += MIN_READ_SZ
 
 // Vary read size 
