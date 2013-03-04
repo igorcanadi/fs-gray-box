@@ -85,7 +85,7 @@ the file after each read to reset the readahead.
 We see in Figure~\ref{fig:p1block} that there are peaks in latency every 4KB for 
 both the VM and the host. This suggests that the block size is 4KB, the page size
 of the system. Notice that the latency diverges linearly between the VM and host,
-implying there is some fixed latency per byte experienced by the VM. we get large
+implying there is some fixed latency per byte experienced by the VM. We get large
 spikes at 4KB, 16KB, and 48KB.
 In the graph of Figure~\ref{fig:p1graph} we see that throughput of 
 both the VM and the host behave
