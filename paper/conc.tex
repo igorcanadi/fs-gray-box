@@ -7,6 +7,13 @@ To summarize our results, we found the best size for random reads to be a multip
 of the page size, 4KB, and that for large reads the size with the best throughput
 was approximately 7MB. We also found that the maximum prefetch size was 128KB.
 
-In the process of doing these experiments we were able to learn quite a bit about
-the ext4 file system, especially the subtle nuances of the Linux readahead and ext4
-block allocation algorithms.
+When investigating file cache, we measured file cache size both with and without balloon array
+that we used to allocate half of the available memory. 
+Our results proved that operating system both in host and virtualized environment 
+adapts file cache size to amount of free memory available. Almost all of free memory was dedicated
+to file cache over the course of our experiments.
+
+Finally, we studied the way ext4 addresses data blocks from inodes. By measuring latency of one-byte appends, 
+we proved that in ext4, the file size after which file system adds additional layer of indirection isn't fixed,
+ but rather that it changes and depends on other factors. We proved our hypothesis only in host OS environment, we
+measured access anomalies in VM that rendered our conclusions in that environment invalid.
