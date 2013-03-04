@@ -8,34 +8,34 @@ we restricted disk accesses to only one harddrive.
 
 In order to perform our comparison with a virtual machine, we used VMware 
 workstation to emulate a two-core machine running 32-bit RHEL6 built on the 
-Linux 2.6.32 kernel for CentOS6 with 4GB of RAM and one 60GB harddrive.
+Linux 2.6.32 kernel for CentOS6 with 8GB of RAM and one 60GB virtual harddrive.
 
 \subsection{Considerations}
 There were several aspects that we considered in order to obtain our data, 
 including our measurement technique, file system caching, noise, and validation.
 
 \subsubsection{Timer}
-For our measurements we used the rdtsc and rdtscp assembly instructions, which load 
+For our measurements we used the \texttt{rdtsc} and \texttt{rdtscp} assembly instructions, which load 
 the current timestamp counter value (in cycles) into the designated registers. In 
 order to guarantee in-order execution of our instructions, we inserted the cpuid 
-instruction ahead of rdtsc to get the timestamp value before the function we wanted 
-to measure. We then used rdtscp to guarantee completion of the measured function 
-before reading timestamp counter again.
+instruction ahead of \texttt{rdtsc} to get the timestamp value before the function we wanted 
+to measure. We then used \texttt{rdtscp} to guarantee completion of the measured function 
+before reading timestamp counter again. We used advices on measuring from Intel's white paper\cite{rdtsc}.
 
 In order to verify the accuracy of our timer, we first compared the time measured 
-using rdtsc/rdtscp with gettimeofday in the non-virtual environment. We calculated
+using \texttt{rdtsc/rdtscp} with gettimeofday in the non-virtual environment. We calculated
 the processor frequency for each measurement and found that the values from 
-rdtsc/rdtscp and gettimeofday resulted in the correct value. We performed this 
-same task on the VM and got the same result. 
+\texttt{rdtsc/rdtscp} and \texttt{gettimeofday} resulted in the correct value. We performed this 
+same task on the VM and got the same result.
 
 \subsubsection{Flushing and Clearing Buffer Cache}
 The cache was an important factor in all of our tests. When running our tests on the
 virtual machine we were careful to clear both the guest and the host caches using 
-\emph{drop\_caches} when necessary. Since the VM runs as a process on the host, memory 
+\texttt{drop\_caches} file in \texttt{/proc/sys/vm} when necessary. Since the VM runs as a process on the host, memory 
 accessed by the VM are cached in the host as well. However, clearing the cache on the VM 
 does not clear the cache of the host due to the principle of isolation. To deal with this
-issue, whenever we clear the cache on the VM we issue a message to the host through
-a certain port. A process on the host listens to this port and clears the cache on
+issue, we developed a simple server-client program in Python. Whenever we clear the cache on the VM
+ we issue a message to the host through a certain port. A process on the host listens to this port and clears the cache on
 receipt of the message.
 
 \subsubsection{Test Files}
@@ -49,16 +49,13 @@ dd if=/dev/urandom of="outputFilePath"
 \end{verbatim}
 
 \subsubsection{Noise}
-During our experiments we encountered a significant amount of noise in our 
-timing measurements. In order to address this, we used several techniques. For instance,
+During our experiments we encountered some amount of noise in our 
+timing measurements. In order to address this, we used several techniques. First,
 we collected data over repetitive runs. We also used the minimum instead of the average
-over multiple for some experiments. We argue that this is a valid metric given 
-that disk accesses experience a minimum latency due to the time to transfer data
-and using the minimum over many runs reduces the effects of variable latencies 
-such as seek time and controller delay. This also mitigates the effect of 
-latency from unrelated sources.
-
-\subsubsection{Validation}
-In order to verify the accuracy of our data we used several Linux utilities such
-as getpagesize, free, and lscpu. 
-
+over multiple runs for some experiments. We argue that this is a valid metric given 
+that disk accesses experience a minimum latency due to the time to transfer data.
+In our experiments we care mostly about the lower bound latency, and care less about 
+variability due to other factors such as process getting descheduled or seek time. Also,
+this helped us detect when some of the reads were served from the cache, since the minimum 
+for that data point was suspiciously low. On other hand, it would only slightly affect the average,
+which would be harder to detect.
