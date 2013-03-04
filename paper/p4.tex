@@ -31,13 +31,13 @@ We propose the experiment presented in Figure \ref{fig:p4pseudo} to verify our h
 \label{fig:p4pseudo}
 \end{figure}
 
-Figure \ref{fig:p4} shows the measured latency of one-byte append to file of variable sizes. Every data point is the minimum latency that we obtained over five experiment runs. In the host, each write took either 12 or 16ms. In the virtual machine, TODO. 
+Figure \ref{fig:p4} shows the measured latency of one-byte append to file of variable sizes. Every data point is the minimum latency that we obtained over five experiment runs. In the host, each write took either 12 or 16ms. Results in the host environment clearly show that we haven't identified any file size for which we would see consistently slower append operation. We did, however, see big write latency spikes in individual test runs. We have also confirmed that some of the resulting files indeed had extent tree with indirection layer. We used \texttt{debugs} to examine file extent tree.
 
-Results clearly show that we haven't identified any file size for which we would see consistently slower append operation. We did, however, see big write latency spikes in individual test runs. We have also confirmed that some of the resulting files indeed had extent tree with indirection layer. We used \texttt{debugs} to examine file extent tree.
+Given that our assumptions hold, these results prove our hypothesis that the moment when indirection layer is inserted does not depend only on file size in ext4.
 
-Given that our assumptions hold, these results prove our hypothesis that in ext4, the moment when indirection layer is inserted does not depend only on file size.
+In the virtual machine, most of the writes take 16ms. However, we observe spikes at 4804KB, 11076KB, 11832KB, 11844KB, 12420KB and 12612KB. We also see unusually fast latencies for some writes. These spikes might possibly be results of building indirection layers at those specific file sizes. However, there might be also results of other anomalies in virtualized environment. We did not further investigate those issues. Our results from running experiments in virtual machine do not prove, nor refute, the hypothesis.
 
- \begin{figure}[ht!]
+\begin{figure}[ht!]
     \begin{subfigure}[b]{0.5\textwidth}
 		\includegraphics[width=1\textwidth]{./figures/p4_host.pdf}
 		\caption{Host}
