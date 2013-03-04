@@ -12,9 +12,10 @@ had similar characteristics across all measured parameters. For instance, the
 optimal size to randomly read a file was N*4KB, a multiple of the page size of the 
 system, and that for large reads the best through put was achieved at approximately
 7MB. The maximum prefetch size was 128KB for both the host and the VM. We also 
-determined that the file cache was related to the amount of physical memory 
-available while our process was running. Finally, we found that for both the host
-and VM that the file size where another level of inodes is added was \#MB.
+determined that the file cache size was related to the amount of physical memory 
+available while our process was running. Finally, we proved that there is no single file
+size after which ext4 adds another level of indirection in host environment. We couldn't prove
+similar hypothesis on a virtual machine.
 
 The rest of the paper is organized as follows. In Section~\ref{sec:method} we 
 discuss our experimental setup and methodology for our experiments. In 

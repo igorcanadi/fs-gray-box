@@ -3,7 +3,8 @@ In this project we measured and compared four aspects of the ext4 file system on
 Redhat Enterprise Linux 6 running directly on a machine as well as on a virtual machine. 
 We found that the ideal buffer sizes for random file accesses were multiples of 
 4KB and that the best size for large random I/O was around 7MB. The maximum 
-prefetch size was 128KB, and the file cache size was dynamic and related to 
-the amount of physical memory that was available. !!!Insert Findings About p4!!!
+prefetch size was 128KB, and the file cache size was dynamic and depended on 
+the amount of physical memory that was available. We also found that, when a file grows,
+the point in which ext4 adds another layer of indirection does not depended solely on file size.
 \end{abstract}
 
