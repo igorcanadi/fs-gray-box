@@ -10,7 +10,7 @@
 #define MIN_READ_SZ    512
 #define MAX_READ_SZ    1024*1024 // Maximum read size, bytes
 #define MAX_NUM_READS  128
-#define NUM_RUNS       20
+#define NUM_RUNS       5
 #define STEP_TRANSFORM(x)    x += MIN_READ_SZ
 
 // Vary read size 
@@ -56,7 +56,7 @@ unsigned int runExp(const char *fName, uint64_t *res){
         t2 = rdtsc_end();
         
         if (res[index] == 0 || (t2-t1) < res[index]){
-            res[index= t2-t1;
+            res[index]= t2-t1;
         }
         close(fd);    
     }
